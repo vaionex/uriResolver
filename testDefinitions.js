@@ -21,41 +21,58 @@ const BIP270_PAYMENT_REQUEST_EXPECTED_JSON = {
   expirationTimestamp: 1622902803,
 };
 
-async function testParsing(uri, expectedResult, done) {
+function compare(name, actual, expected) {
+  try {
+    expect(actual).toBe(expected);
+  } catch (error) {
+    throw new Error(`Comparison Failed: "${name}"\n${error.message}`);
+  }
+}
+
+async function testParsing(uri, expected, done) {
   var logsForThisTest = [];
-  var paymentRequest = null;
+  var payReq = null;
   (async function _doTest() {
     // console.log(uri);
-    paymentRequest = await bitUriParser.parse(
+    payReq = await bitUriParser.parse(
       uri,
       (options = { debugLog: (i) => logsForThisTest.push(i.toString()) })
     );
 
-    expect(paymentRequest["uri"]).toBe(uri);
+    compare("uri", payReq["uri"], uri);
+
     ["type", "memo", "isBSV", "peer", "peerProtocol"].forEach((field) => {
-      if (expectedResult[field] !== SKIP_CHECK)
-        expect(paymentRequest[field]).toBe(expectedResult[field]);
+      if (expected[field] !== SKIP_CHECK)
+        compare(field, payReq[field], expected[field]);
     });
 
-    expect(paymentRequest.inputs.length).toBe(expectedResult.inputs.length);
-    for (let i = 0; i < paymentRequest.inputs.length; i++) {
+    compare("inputs.length", payReq.inputs.length, expected.inputs.length);
+
+    for (let i = 0; i < payReq.inputs.length; i++) {
       ["txid", "vout", "satoshis", "scriptSig"].forEach((field) => {
-        if (expectedResult.inputs[i][field] !== SKIP_CHECK)
-          expect(paymentRequest.inputs[i][field]).toBe(
-            expectedResult.inputs[i][field]
+        if (expected.inputs[i][field] !== SKIP_CHECK)
+          compare(
+            `.inputs[${i}][${field}]`,
+            payReq.inputs[i][field],
+            expected.inputs[i][field]
           );
       });
     }
 
-    expect(paymentRequest.outputs.length).toBe(expectedResult.outputs.length);
-    for (let i = 0; i < paymentRequest.outputs.length; i++) {
-      ["script", "satoshis"].forEach((field) => {
-        if (expectedResult.outputs[i][field] !== SKIP_CHECK)
-          expect(paymentRequest.outputs[i][field]).toBe(
-            expectedResult.outputs[i][field]
-          );
-      });
+    for (let i = 0; i < expected.outputs.length; i++) {
+      if (expected.outputs[i].script !== SKIP_CHECK)
+        compare(
+          `.outputs[${i}].script`,
+          payReq.outputs[i].script,
+          expected.outputs[i].script
+        );
     }
+
+    compare(
+      `Sum of ${payReq.outputs.map((i) => i.satoshis).join()}`,
+      payReq.outputs.map((i) => i.satoshis).reduce((a, b) => a + b),
+      expected.outputs.map((i) => i.satoshis).reduce((a, b) => a + b)
+    );
   })()
     .then(done)
     .catch((e) => {
@@ -68,12 +85,12 @@ async function testParsing(uri, expectedResult, done) {
       );
 
       var message = e + "\n\n URI: " + uri;
-      if (paymentRequest)
+      if (payReq)
         message +=
           "\n\n Actual:\n" +
-          JSON.stringify(paymentRequest) +
+          JSON.stringify(payReq) +
           "\n\n Expected:\n" +
-          JSON.stringify(expectedResult);
+          JSON.stringify(expected);
       message += "\n\n " + e.stack;
       done(message);
     });
@@ -307,7 +324,7 @@ testData = {
       inputs: [],
       memo: "PayMe",
       isBSV: true,
-      peer: "https://cloud.handcash.io/api/bsvalias/p2p-payment-destination/bitcoinsofia@handcash.io",
+      peer: "https://cloud.handcash.io/api/bsvalias/receive-transaction/bitcoinsofia@handcash.io",
       peerProtocol: "paymail",
     },
   },
@@ -325,7 +342,7 @@ testData = {
       inputs: [],
       memo: "PayMe",
       isBSV: true,
-      peer: "https://www.moneybutton.com/api/v1/bsvalias/p2p-payment-destination/bitcoinsofia@moneybutton.com",
+      peer: "https://www.moneybutton.com/api/v1/bsvalias/receive-transaction/bitcoinsofia@moneybutton.com",
       peerProtocol: "paymail",
     },
   },

@@ -65,12 +65,12 @@ var schemes = [
     checkParams: (p) => true,
     knownRequiredParams: [],
 
-    parseOutputs: async (uri, o) => [await create_Paymail_Output(uri, o)],
+    parseOutputs: async (uri, o) => await create_Paymail_Outputs(uri, o),
     parseInputs: (uri, o) => [],
     parseMemo: (uri, o) =>
       uri.searchParams["purpose"] || "Send to " + decodeURIComponent(uri.host),
-    parsePeer: (uri, o) => check_Paymail_Peer(uri, o),
-    parsePeerData: (uri, o) => null,
+    parsePeer: (uri, o) => o["peer"],
+    parsePeerData: (uri, o) => o["peerData"],
     getPeerProtocol: (uri, o) => (o["peer"] ? "paymail" : null),
   },
   {
@@ -246,27 +246,22 @@ async function create_PrivateKey_Inputs(uri, o, key) {
   return utxos;
 }
 
-async function create_Paymail_Output(uri, o) {
+async function create_Paymail_Outputs(uri, o) {
   const satoshis = parseInt(uri.searchParams["amount"]);
-  return {
-    script: await o.paymailResolverFunction(
-      decodeURIComponent(uri.host),
-      satoshis || 100000,
-      o
-    ),
-    satoshis: satoshis,
-  };
-}
-
-async function check_Paymail_Peer(uri, o) {
-  const peerUrlString = await o.paymailPeerDnsResolverFunction(
+  var { outputs, p2p } = await o.paymailResolverFunction(
     decodeURIComponent(uri.host),
+    satoshis || 100000,
     o
   );
-  if (peerUrlString) {
-    o["peer"] = peerUrlString;
-    return peerUrlString;
-  } else return null;
+
+  if (!p2p) p2p = { peer: null, peerData: null };
+  o["peer"] = p2p.peer;
+  o["peerData"] = p2p.peerData;
+
+  return outputs.map((o) => {
+    if (satoshis) return o;
+    else return { ...o, satoshis: NaN };
+  });
 }
 
 function create_BIP275_Outputs(uri, o) {
@@ -457,13 +452,7 @@ defaultOptions = {
   paymailResolverFunction: (paymail, satoshis, o) => {
     throw new Error(
       "bitUriParser requires you to set 'options.paymailResolverFunction'" +
-        " to a function like : function(paymail, satoshis, optionsObject) { /* RETURNS THE OUTPUT SCRIPT OF THE PAYMAIL IN HEX FORMAT */ }"
-    );
-  },
-  paymailPeerDnsResolverFunction: (paymail, o) => {
-    throw new Error(
-      "bitUriParser requires you to set 'options.paymailPeerDnsResolverFunction'" +
-        " to a function like : function(paymail, optionsObject) { /* RETURNS THE P2P ENDPOINT FOR PUSHING TRANSACTIONS (OR UNDEFINED IF NOT SUPPORTED) */ }"
+        " to a function like : function(paymail, satoshis, optionsObject) { /* RETURNS { outputs: [{ script, satoshis }], p2p: { peer, peerData } } */ }"
     );
   },
 };
