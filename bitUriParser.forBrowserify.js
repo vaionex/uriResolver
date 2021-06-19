@@ -1,10 +1,10 @@
 var bitUriParser = require("./bitUriParser");
-var browserPaymailResolver = require("./paymail/resolve-in-browser");
+var paymail = require("./paymail");
 
-const defailtOptions = browserPaymailResolver.defaultOptions;
+const defailtOptions = paymail.getOptionForPaymail();
 
 window.bitUriParser = {
   ...bitUriParser,
   parse: (bitcoinUriString, o = defailtOptions) =>
-    bitUriParser.parse(bitcoinUriString, {...defailtOptions, ...o}),
+    bitUriParser.parse(bitcoinUriString, { ...defailtOptions, ...o }),
 };

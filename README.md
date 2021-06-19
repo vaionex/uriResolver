@@ -34,8 +34,8 @@ If you need to resolve paymails, then you need to provide some options in that o
 If you have an identity in a running paymail server, simply add this:
 ``` js
     await bitUriParser.parse(bitUri, {
-        hdPrivKey: "Private key from which the identity is derived."
-        derivationPath: "Derivation path used to derive that identity."
+        paymailOfPaymailUser: "your.paymail@domain.com",
+        getPaimailIdentityKeys: () => { return { priv: "identity private key", pub: "identity public key" }; }
     });
 ```
 
@@ -43,7 +43,7 @@ Alternatively, you can also provide your own function for resolving paymails:
 ``` js
     await bitUriParser.parse(bitUri, {
         paymailResolverFunction: async function(paymailAddress, satoshis, optionsObject) {
-            return "The output script in HEX format";
+            return { outputs: [{ script, satoshis }], p2p: { peer, peerData } };
         }
     });
 ```

@@ -22311,36 +22311,49 @@ utils.intFromLE = intFromLE;
 arguments[4][15][0].apply(exports,arguments)
 },{"buffer":23,"dup":15}],103:[function(require,module,exports){
 module.exports={
-  "name": "elliptic",
-  "version": "6.5.4",
-  "description": "EC cryptography",
-  "main": "lib/elliptic.js",
-  "files": [
-    "lib"
-  ],
-  "scripts": {
-    "lint": "eslint lib test",
-    "lint:fix": "npm run lint -- --fix",
-    "unit": "istanbul test _mocha --reporter=spec test/index.js",
-    "test": "npm run lint && npm run unit",
-    "version": "grunt dist && git add dist/"
+  "_from": "elliptic@^6.5.3",
+  "_id": "elliptic@6.5.4",
+  "_inBundle": false,
+  "_integrity": "sha512-iLhC6ULemrljPZb+QutR5TQGB+pdW6KGD5RSegS+8sorOZT+rdQFbsQFJgvN3eRqNALqJer4oQ16YvJHlU8hzQ==",
+  "_location": "/browserify/elliptic",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "range",
+    "registry": true,
+    "raw": "elliptic@^6.5.3",
+    "name": "elliptic",
+    "escapedName": "elliptic",
+    "rawSpec": "^6.5.3",
+    "saveSpec": null,
+    "fetchSpec": "^6.5.3"
   },
-  "repository": {
-    "type": "git",
-    "url": "git@github.com:indutny/elliptic"
-  },
-  "keywords": [
-    "EC",
-    "Elliptic",
-    "curve",
-    "Cryptography"
+  "_requiredBy": [
+    "/browserify/browserify-sign",
+    "/browserify/create-ecdh"
   ],
-  "author": "Fedor Indutny <fedor@indutny.com>",
-  "license": "MIT",
+  "_resolved": "https://registry.npmjs.org/elliptic/-/elliptic-6.5.4.tgz",
+  "_shasum": "da37cebd31e79a1367e941b592ed1fbebd58abbb",
+  "_spec": "elliptic@^6.5.3",
+  "_where": "/home/aleks/.npm/_npx/56757/lib/node_modules/browserify/node_modules/browserify-sign",
+  "author": {
+    "name": "Fedor Indutny",
+    "email": "fedor@indutny.com"
+  },
   "bugs": {
     "url": "https://github.com/indutny/elliptic/issues"
   },
-  "homepage": "https://github.com/indutny/elliptic",
+  "bundleDependencies": false,
+  "dependencies": {
+    "bn.js": "^4.11.9",
+    "brorand": "^1.1.0",
+    "hash.js": "^1.0.0",
+    "hmac-drbg": "^1.0.1",
+    "inherits": "^2.0.4",
+    "minimalistic-assert": "^1.0.1",
+    "minimalistic-crypto-utils": "^1.0.1"
+  },
+  "deprecated": false,
+  "description": "EC cryptography",
   "devDependencies": {
     "brfs": "^2.0.2",
     "coveralls": "^3.1.0",
@@ -22356,15 +22369,31 @@ module.exports={
     "istanbul": "^0.4.5",
     "mocha": "^8.0.1"
   },
-  "dependencies": {
-    "bn.js": "^4.11.9",
-    "brorand": "^1.1.0",
-    "hash.js": "^1.0.0",
-    "hmac-drbg": "^1.0.1",
-    "inherits": "^2.0.4",
-    "minimalistic-assert": "^1.0.1",
-    "minimalistic-crypto-utils": "^1.0.1"
-  }
+  "files": [
+    "lib"
+  ],
+  "homepage": "https://github.com/indutny/elliptic",
+  "keywords": [
+    "EC",
+    "Elliptic",
+    "curve",
+    "Cryptography"
+  ],
+  "license": "MIT",
+  "main": "lib/elliptic.js",
+  "name": "elliptic",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/indutny/elliptic.git"
+  },
+  "scripts": {
+    "lint": "eslint lib test",
+    "lint:fix": "npm run lint -- --fix",
+    "test": "npm run lint && npm run unit",
+    "unit": "istanbul test _mocha --reporter=spec test/index.js",
+    "version": "grunt dist && git add dist/"
+  },
+  "version": "6.5.4"
 }
 
 },{}],104:[function(require,module,exports){
@@ -29342,17 +29371,17 @@ function config (name) {
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],199:[function(require,module,exports){
 var bitUriParser = require("./bitUriParser");
-var browserPaymailResolver = require("./paymail/resolve-in-browser");
+var paymail = require("./paymail");
 
-const defailtOptions = browserPaymailResolver.defaultOptions;
+const defailtOptions = paymail.getOptionForPaymail();
 
 window.bitUriParser = {
   ...bitUriParser,
   parse: (bitcoinUriString, o = defailtOptions) =>
-    bitUriParser.parse(bitcoinUriString, {...defailtOptions, ...o}),
+    bitUriParser.parse(bitcoinUriString, { ...defailtOptions, ...o }),
 };
 
-},{"./bitUriParser":200,"./paymail/resolve-in-browser":357}],200:[function(require,module,exports){
+},{"./bitUriParser":200,"./paymail":357}],200:[function(require,module,exports){
 var url = require("url");
 var fetch = require("isomorphic-fetch");
 var bsv = require("bsv");
@@ -29420,12 +29449,12 @@ var schemes = [
     checkParams: (p) => true,
     knownRequiredParams: [],
 
-    parseOutputs: async (uri, o) => [await create_Paymail_Output(uri, o)],
+    parseOutputs: async (uri, o) => await create_Paymail_Outputs(uri, o),
     parseInputs: (uri, o) => [],
     parseMemo: (uri, o) =>
       uri.searchParams["purpose"] || "Send to " + decodeURIComponent(uri.host),
-    parsePeer: (uri, o) => check_Paymail_Peer(uri, o),
-    parsePeerData: (uri, o) => null,
+    parsePeer: (uri, o) => o["peer"],
+    parsePeerData: (uri, o) => o["peerData"],
     getPeerProtocol: (uri, o) => (o["peer"] ? "paymail" : null),
   },
   {
@@ -29601,27 +29630,22 @@ async function create_PrivateKey_Inputs(uri, o, key) {
   return utxos;
 }
 
-async function create_Paymail_Output(uri, o) {
+async function create_Paymail_Outputs(uri, o) {
   const satoshis = parseInt(uri.searchParams["amount"]);
-  return {
-    script: await o.paymailResolverFunction(
-      decodeURIComponent(uri.host),
-      satoshis || 100000,
-      o
-    ),
-    satoshis: satoshis,
-  };
-}
-
-async function check_Paymail_Peer(uri, o) {
-  const peerUrlString = await o.paymailPeerDnsResolverFunction(
+  var { outputs, p2p } = await o.paymailResolverFunction(
     decodeURIComponent(uri.host),
+    satoshis || 100000,
     o
   );
-  if (peerUrlString) {
-    o["peer"] = peerUrlString;
-    return peerUrlString;
-  } else return null;
+
+  if (!p2p) p2p = { peer: null, peerData: null };
+  o["peer"] = p2p.peer;
+  o["peerData"] = p2p.peerData;
+
+  return outputs.map((o) => {
+    if (satoshis) return o;
+    else return { ...o, satoshis: NaN };
+  });
 }
 
 function create_BIP275_Outputs(uri, o) {
@@ -29812,13 +29836,7 @@ defaultOptions = {
   paymailResolverFunction: (paymail, satoshis, o) => {
     throw new Error(
       "bitUriParser requires you to set 'options.paymailResolverFunction'" +
-        " to a function like : function(paymail, satoshis, optionsObject) { /* RETURNS THE OUTPUT SCRIPT OF THE PAYMAIL IN HEX FORMAT */ }"
-    );
-  },
-  paymailPeerDnsResolverFunction: (paymail, o) => {
-    throw new Error(
-      "bitUriParser requires you to set 'options.paymailPeerDnsResolverFunction'" +
-        " to a function like : function(paymail, optionsObject) { /* RETURNS THE P2P ENDPOINT FOR PUSHING TRANSACTIONS (OR UNDEFINED IF NOT SUPPORTED) */ }"
+        " to a function like : function(paymail, satoshis, optionsObject) { /* RETURNS { outputs: [{ script, satoshis }], p2p: { peer, peerData } } */ }"
     );
   },
 };
@@ -39420,11 +39438,8 @@ class EndpointResolver {
       return this._cache[aDomain];
     }
 
-    const {
-      domain,
-      port
-    } = await this.getWellKnownBaseUrl(aDomain);
-    const apiDescriptor = this.fetchApiDescriptor(domain, port);
+    const url = await this.getWellKnownBaseUrl(aDomain);
+    const apiDescriptor = this.fetchApiDescriptor(url.domain, url.port);
     this._cache[aDomain] = apiDescriptor;
     return apiDescriptor;
   }
@@ -43072,43 +43087,58 @@ utils.intFromLE = intFromLE;
 arguments[4][21][0].apply(exports,arguments)
 },{"buffer":23,"dup":21}],221:[function(require,module,exports){
 module.exports={
-  "name": "bitcoin-elliptic",
-  "version": "7.0.1",
-  "description": "EC cryptography",
-  "main": "lib/elliptic.js",
-  "files": [
-    "lib"
+  "_args": [
+    [
+      "bitcoin-elliptic@7.0.1",
+      "/home/aleks/Projects/uriResolver"
+    ]
   ],
-  "scripts": {
-    "jscs": "jscs benchmarks/*.js lib/*.js lib/**/*.js lib/**/**/*.js test/index.js",
-    "jshint": "jscs benchmarks/*.js lib/*.js lib/**/*.js lib/**/**/*.js test/index.js",
-    "lint": "npm run jscs && npm run jshint",
-    "unit": "istanbul test _mocha --reporter=spec test/index.js",
-    "test": "npm run lint && npm run unit",
-    "version": "grunt dist && git add dist/"
+  "_from": "bitcoin-elliptic@7.0.1",
+  "_id": "bitcoin-elliptic@7.0.1",
+  "_inBundle": false,
+  "_integrity": "sha512-eJIERwXIIjJK7gfVoevk0G1CbYbxezZ6ePZXIxngjyI+QQHXWqXMbY+gpxsND8FCLvWl050fw6W+PVZge5fBHw==",
+  "_location": "/bitcoin-elliptic",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "version",
+    "registry": true,
+    "raw": "bitcoin-elliptic@7.0.1",
+    "name": "bitcoin-elliptic",
+    "escapedName": "bitcoin-elliptic",
+    "rawSpec": "7.0.1",
+    "saveSpec": null,
+    "fetchSpec": "7.0.1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git@github.com:moneybutton/elliptic"
-  },
-  "keywords": [
-    "EC",
-    "Elliptic",
-    "curve",
-    "Cryptography"
+  "_requiredBy": [
+    "/@moneybutton/brfc/bsv",
+    "/@moneybutton/paymail-client/bsv"
   ],
-  "author": "Fedor Indutny <fedor@indutny.com>",
+  "_resolved": "https://registry.npmjs.org/bitcoin-elliptic/-/bitcoin-elliptic-7.0.1.tgz",
+  "_spec": "7.0.1",
+  "_where": "/home/aleks/Projects/uriResolver",
+  "author": {
+    "name": "Fedor Indutny",
+    "email": "fedor@indutny.com"
+  },
+  "bugs": {
+    "url": "https://github.com/indutny/elliptic/issues"
+  },
   "contributors": [
     {
       "name": "Ryan X. Charles",
       "email": "ryanxcharles@gmail.com"
     }
   ],
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/indutny/elliptic/issues"
+  "dependencies": {
+    "bn.js": "^5.1.1",
+    "brorand": "^1.0.1",
+    "hash.js": "^1.0.0",
+    "hmac-drbg": "^1.0.0",
+    "inherits": "^2.0.1",
+    "minimalistic-assert": "^1.0.0",
+    "minimalistic-crypto-utils": "^1.0.0"
   },
-  "homepage": "https://github.com/moneybutton/elliptic",
+  "description": "EC cryptography",
   "devDependencies": {
     "brfs": "^2.0.2",
     "coveralls": "^3.0.8",
@@ -43125,15 +43155,32 @@ module.exports={
     "jshint": "^2.11.1",
     "mocha": "^7.1.2"
   },
-  "dependencies": {
-    "bn.js": "^5.1.1",
-    "brorand": "^1.0.1",
-    "hash.js": "^1.0.0",
-    "hmac-drbg": "^1.0.0",
-    "inherits": "^2.0.1",
-    "minimalistic-assert": "^1.0.0",
-    "minimalistic-crypto-utils": "^1.0.0"
-  }
+  "files": [
+    "lib"
+  ],
+  "homepage": "https://github.com/moneybutton/elliptic",
+  "keywords": [
+    "EC",
+    "Elliptic",
+    "curve",
+    "Cryptography"
+  ],
+  "license": "MIT",
+  "main": "lib/elliptic.js",
+  "name": "bitcoin-elliptic",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/moneybutton/elliptic.git"
+  },
+  "scripts": {
+    "jscs": "jscs benchmarks/*.js lib/*.js lib/**/*.js lib/**/**/*.js test/index.js",
+    "jshint": "jscs benchmarks/*.js lib/*.js lib/**/*.js lib/**/**/*.js test/index.js",
+    "lint": "npm run jscs && npm run jshint",
+    "test": "npm run lint && npm run unit",
+    "unit": "istanbul test _mocha --reporter=spec test/index.js",
+    "version": "grunt dist && git add dist/"
+  },
+  "version": "7.0.1"
 }
 
 },{}],222:[function(require,module,exports){
@@ -56295,8 +56342,8 @@ Input.prototype._estimateSize = function () {
 
 module.exports = Input
 
-}).call(this)}).call(this,{"isBuffer":require("../../../../../../../.npm/_npx/50a79cc5f24072db/node_modules/is-buffer/index.js")})
-},{"../../../../../../../.npm/_npx/50a79cc5f24072db/node_modules/is-buffer/index.js":137,"../../encoding/bufferwriter":242,"../../errors":244,"../../script":252,"../../util/_":267,"../../util/js":268,"../../util/preconditions":269,"../output":262,"../sighash":263,"buffer":67}],258:[function(require,module,exports){
+}).call(this)}).call(this,{"isBuffer":require("../../../../../../../.npm/_npx/56757/lib/node_modules/browserify/node_modules/is-buffer/index.js")})
+},{"../../../../../../../.npm/_npx/56757/lib/node_modules/browserify/node_modules/is-buffer/index.js":137,"../../encoding/bufferwriter":242,"../../errors":244,"../../script":252,"../../util/_":267,"../../util/js":268,"../../util/preconditions":269,"../output":262,"../sighash":263,"buffer":67}],258:[function(require,module,exports){
 (function (Buffer){(function (){
 'use strict'
 
@@ -57111,8 +57158,8 @@ Output.prototype.getSize = function () {
 
 module.exports = Output
 
-}).call(this)}).call(this,{"isBuffer":require("../../../../../../.npm/_npx/50a79cc5f24072db/node_modules/is-buffer/index.js")})
-},{"../../../../../../.npm/_npx/50a79cc5f24072db/node_modules/is-buffer/index.js":137,"../crypto/bn":231,"../encoding/bufferwriter":242,"../encoding/varint":243,"../errors":244,"../script":252,"../util/_":267,"../util/js":268,"../util/preconditions":269,"buffer":67}],263:[function(require,module,exports){
+}).call(this)}).call(this,{"isBuffer":require("../../../../../../.npm/_npx/56757/lib/node_modules/browserify/node_modules/is-buffer/index.js")})
+},{"../../../../../../.npm/_npx/56757/lib/node_modules/browserify/node_modules/is-buffer/index.js":137,"../crypto/bn":231,"../encoding/bufferwriter":242,"../encoding/varint":243,"../errors":244,"../script":252,"../util/_":267,"../util/js":268,"../util/preconditions":269,"buffer":67}],263:[function(require,module,exports){
 (function (Buffer){(function (){
 'use strict'
 
@@ -58707,8 +58754,8 @@ Transaction.prototype.isCoinbase = function () {
 
 module.exports = Transaction
 
-}).call(this)}).call(this,{"isBuffer":require("../../../../../../.npm/_npx/50a79cc5f24072db/node_modules/is-buffer/index.js")})
-},{"../../../../../../.npm/_npx/50a79cc5f24072db/node_modules/is-buffer/index.js":137,"../address":226,"../crypto/bn":231,"../crypto/hash":234,"../crypto/signature":238,"../encoding/bufferreader":241,"../encoding/bufferwriter":242,"../encoding/varint":243,"../errors":244,"../privatekey":250,"../script":252,"../util/_":267,"../util/js":268,"../util/preconditions":269,"./input":256,"./output":262,"./sighash":263,"./unspentoutput":266,"buffer":67}],266:[function(require,module,exports){
+}).call(this)}).call(this,{"isBuffer":require("../../../../../../.npm/_npx/56757/lib/node_modules/browserify/node_modules/is-buffer/index.js")})
+},{"../../../../../../.npm/_npx/56757/lib/node_modules/browserify/node_modules/is-buffer/index.js":137,"../address":226,"../crypto/bn":231,"../crypto/hash":234,"../crypto/signature":238,"../encoding/bufferreader":241,"../encoding/bufferwriter":242,"../encoding/varint":243,"../errors":244,"../privatekey":250,"../script":252,"../util/_":267,"../util/js":268,"../util/preconditions":269,"./input":256,"./output":262,"./sighash":263,"./unspentoutput":266,"buffer":67}],266:[function(require,module,exports){
 'use strict'
 
 var _ = require('../util/_')
@@ -58986,23 +59033,66 @@ module.exports = {
 
 },{"../errors":244,"../util/_":267,"buffer":67}],270:[function(require,module,exports){
 module.exports={
-  "name": "bsv",
-  "version": "1.5.6",
-  "description": "A pure and powerful JavaScript Bitcoin SV (BSV) library.",
-  "author": "Ryan X. Charles <ryan@moneybutton.com>",
-  "main": "index.js",
-  "scripts": {
-    "lint": "standard",
-    "test": "standard && mocha",
-    "coverage": "nyc --reporter=text npm run test",
-    "build-bsv": "webpack index.js --config webpack.config.js",
-    "build-ecies": "webpack ecies/index.js --config webpack.subproject.config.js --output-library bsvEcies -o bsv-ecies.min.js",
-    "build-message": "webpack message/index.js --config webpack.subproject.config.js --output-library bsvMessage -o bsv-message.min.js",
-    "build-mnemonic": "webpack mnemonic/index.js --config webpack.subproject.config.js --output-library bsvMnemonic -o bsv-mnemonic.min.js",
-    "build": "yarn build-bsv && yarn build-ecies && yarn build-message && yarn build-mnemonic",
-    "prepublishOnly": "yarn build"
+  "_args": [
+    [
+      "bsv@1.5.6",
+      "/home/aleks/Projects/uriResolver"
+    ]
+  ],
+  "_from": "bsv@1.5.6",
+  "_id": "bsv@1.5.6",
+  "_inBundle": false,
+  "_integrity": "sha512-A0g36x63lVF9Ia6/z/RjcxaQMHE5cLl2rDxjUIKz0UTMLf5bPPyLI9yVyY2JkecF77MrU+MQdKVt0MSdU5abtw==",
+  "_location": "/bsv",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "version",
+    "registry": true,
+    "raw": "bsv@1.5.6",
+    "name": "bsv",
+    "escapedName": "bsv",
+    "rawSpec": "1.5.6",
+    "saveSpec": null,
+    "fetchSpec": "1.5.6"
   },
-  "unpkg": "bsv.min.js",
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/bsv/-/bsv-1.5.6.tgz",
+  "_spec": "1.5.6",
+  "_where": "/home/aleks/Projects/uriResolver",
+  "author": {
+    "name": "Ryan X. Charles",
+    "email": "ryan@moneybutton.com"
+  },
+  "browser": {
+    "request": "browser-request"
+  },
+  "bugs": {
+    "url": "https://github.com/moneybutton/bsv/issues"
+  },
+  "dependencies": {
+    "aes-js": "^3.1.2",
+    "bn.js": "=4.11.9",
+    "bs58": "=4.0.1",
+    "clone-deep": "^4.0.1",
+    "elliptic": "6.5.4",
+    "hash.js": "^1.1.7",
+    "inherits": "2.0.3",
+    "unorm": "1.4.1"
+  },
+  "description": "A pure and powerful JavaScript Bitcoin SV (BSV) library.",
+  "devDependencies": {
+    "brfs": "2.0.1",
+    "chai": "4.2.0",
+    "mocha": "^8.4.0",
+    "nyc": "^14.1.1",
+    "sinon": "7.2.3",
+    "standard": "12.0.1",
+    "webpack": "4.29.3",
+    "webpack-cli": "^3.3.12"
+  },
+  "homepage": "https://github.com/moneybutton/bsv#readme",
   "keywords": [
     "bitcoin",
     "transaction",
@@ -59019,34 +59109,24 @@ module.exports={
     "bip70",
     "multisig"
   ],
+  "license": "MIT",
+  "main": "index.js",
+  "name": "bsv",
   "repository": {
     "type": "git",
-    "url": "https://github.com/moneybutton/bsv"
+    "url": "git+https://github.com/moneybutton/bsv.git"
   },
-  "browser": {
-    "request": "browser-request"
+  "scripts": {
+    "build": "yarn build-bsv && yarn build-ecies && yarn build-message && yarn build-mnemonic",
+    "build-bsv": "webpack index.js --config webpack.config.js",
+    "build-ecies": "webpack ecies/index.js --config webpack.subproject.config.js --output-library bsvEcies -o bsv-ecies.min.js",
+    "build-message": "webpack message/index.js --config webpack.subproject.config.js --output-library bsvMessage -o bsv-message.min.js",
+    "build-mnemonic": "webpack mnemonic/index.js --config webpack.subproject.config.js --output-library bsvMnemonic -o bsv-mnemonic.min.js",
+    "coverage": "nyc --reporter=text npm run test",
+    "lint": "standard",
+    "prepublishOnly": "yarn build",
+    "test": "standard && mocha"
   },
-  "dependencies": {
-    "aes-js": "^3.1.2",
-    "bn.js": "=4.11.9",
-    "bs58": "=4.0.1",
-    "clone-deep": "^4.0.1",
-    "elliptic": "6.5.4",
-    "hash.js": "^1.1.7",
-    "inherits": "2.0.3",
-    "unorm": "1.4.1"
-  },
-  "devDependencies": {
-    "brfs": "2.0.1",
-    "chai": "4.2.0",
-    "mocha": "^8.4.0",
-    "nyc": "^14.1.1",
-    "sinon": "7.2.3",
-    "standard": "12.0.1",
-    "webpack": "4.29.3",
-    "webpack-cli": "^3.3.12"
-  },
-  "license": "MIT",
   "standard": {
     "globals": [
       "afterEach",
@@ -59057,7 +59137,9 @@ module.exports={
     "ignore": [
       "dist/**"
     ]
-  }
+  },
+  "unpkg": "bsv.min.js",
+  "version": "1.5.6"
 }
 
 },{}],271:[function(require,module,exports){
@@ -59146,8 +59228,95 @@ arguments[4][101][0].apply(exports,arguments)
 },{"bn.js":222,"dup":101,"minimalistic-assert":318,"minimalistic-crypto-utils":319}],288:[function(require,module,exports){
 arguments[4][136][0].apply(exports,arguments)
 },{"dup":136}],289:[function(require,module,exports){
-arguments[4][103][0].apply(exports,arguments)
-},{"dup":103}],290:[function(require,module,exports){
+module.exports={
+  "_args": [
+    [
+      "elliptic@6.5.4",
+      "/home/aleks/Projects/uriResolver"
+    ]
+  ],
+  "_from": "elliptic@6.5.4",
+  "_id": "elliptic@6.5.4",
+  "_inBundle": false,
+  "_integrity": "sha512-iLhC6ULemrljPZb+QutR5TQGB+pdW6KGD5RSegS+8sorOZT+rdQFbsQFJgvN3eRqNALqJer4oQ16YvJHlU8hzQ==",
+  "_location": "/elliptic",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "version",
+    "registry": true,
+    "raw": "elliptic@6.5.4",
+    "name": "elliptic",
+    "escapedName": "elliptic",
+    "rawSpec": "6.5.4",
+    "saveSpec": null,
+    "fetchSpec": "6.5.4"
+  },
+  "_requiredBy": [
+    "/bsv"
+  ],
+  "_resolved": "https://registry.npmjs.org/elliptic/-/elliptic-6.5.4.tgz",
+  "_spec": "6.5.4",
+  "_where": "/home/aleks/Projects/uriResolver",
+  "author": {
+    "name": "Fedor Indutny",
+    "email": "fedor@indutny.com"
+  },
+  "bugs": {
+    "url": "https://github.com/indutny/elliptic/issues"
+  },
+  "dependencies": {
+    "bn.js": "^4.11.9",
+    "brorand": "^1.1.0",
+    "hash.js": "^1.0.0",
+    "hmac-drbg": "^1.0.1",
+    "inherits": "^2.0.4",
+    "minimalistic-assert": "^1.0.1",
+    "minimalistic-crypto-utils": "^1.0.1"
+  },
+  "description": "EC cryptography",
+  "devDependencies": {
+    "brfs": "^2.0.2",
+    "coveralls": "^3.1.0",
+    "eslint": "^7.6.0",
+    "grunt": "^1.2.1",
+    "grunt-browserify": "^5.3.0",
+    "grunt-cli": "^1.3.2",
+    "grunt-contrib-connect": "^3.0.0",
+    "grunt-contrib-copy": "^1.0.0",
+    "grunt-contrib-uglify": "^5.0.0",
+    "grunt-mocha-istanbul": "^5.0.2",
+    "grunt-saucelabs": "^9.0.1",
+    "istanbul": "^0.4.5",
+    "mocha": "^8.0.1"
+  },
+  "files": [
+    "lib"
+  ],
+  "homepage": "https://github.com/indutny/elliptic",
+  "keywords": [
+    "EC",
+    "Elliptic",
+    "curve",
+    "Cryptography"
+  ],
+  "license": "MIT",
+  "main": "lib/elliptic.js",
+  "name": "elliptic",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/indutny/elliptic.git"
+  },
+  "scripts": {
+    "lint": "eslint lib test",
+    "lint:fix": "npm run lint -- --fix",
+    "test": "npm run lint && npm run unit",
+    "unit": "istanbul test _mocha --reporter=spec test/index.js",
+    "version": "grunt dist && git add dist/"
+  },
+  "version": "6.5.4"
+}
+
+},{}],290:[function(require,module,exports){
 arguments[4][106][0].apply(exports,arguments)
 },{"dup":106,"inherits":291,"readable-stream":342,"safe-buffer":344}],291:[function(require,module,exports){
 arguments[4][136][0].apply(exports,arguments)
@@ -66118,30 +66287,83 @@ arguments[4][198][0].apply(exports,arguments)
 })));
 
 },{}],357:[function(require,module,exports){
-var paymail = require("@moneybutton/paymail-client");
-var bsv = require("bsv");
+var paymail = require("@moneybutton/paymail-client/dist/paymail-client.cjs");
 var fetch = require("isomorphic-fetch");
 
-const defaultOptions = {
-  paymailOfPaymailUser: "alekstest@wallet.vaionex.com",
-  hdPrivKey:
-    "xprv9s21ZrQH143K42VC5n2vzZfFXEsTbQA5LnWjbm7ScYwroo6QSLYK383z7oiPqsQehQP2hNa2vvRoQGxMuSqF5kghvWPcrDnZrBGu1YVia2X",
-  derivationPath: "m/44'/0'/0'/0/0",
+function getOptionForPaymail(
+  dns,
+  ownPaymail = "alekstest@wallet.vaionex.com",
+  getPaimailIdentityKeys = async () => {
+    return {
+      priv: "KxDYUBkFFDbPTLkvnx8MjXd2raYM7PjY633gsW6UPU4CqM4ero93",
+      pub: "02d6a46240a16bff968e819e6f3d6ddb5e5bd43de326d8c0e299a4fcbd8139b7b9",
+    };
+  }
+) {
+  dns = dns || new paymail.BrowserDns(fetch);
+  const client = new paymail.PaymailClient(dns, fetch);
+  return {
+    paymailOfPaymailUser: ownPaymail,
+    getPaimailIdentityKeys,
+    paymailResolverFunction: async (paymailAddress, satoshis, o) =>
+      await resolve(client, dns, paymailAddress, satoshis, o),
+  };
+}
 
-  paymailResolverFunction: resolve,
-  paymailPeerDnsResolverFunction: findPeerEndpoint,
-};
+const P2P_RECEIVE_CAPABILITY = "5f1323cddf31";
+const P2P_DESTINATION_CAPABILITY = "2a40af698840";
 
-async function resolve(paymailAddress, satoshis = 100000, o = defaultOptions) {
-  o = { ...defaultOptions, ...o };
+async function resolve(
+  paymailClient,
+  dns,
+  paymailAddress,
+  satoshis = 100000,
+  o
+) {
+  console.log("OPTIONS : " + JSON.stringify(o));
 
-  var derivedIdentityKey = bsv.HDPrivateKey.fromString(o.hdPrivKey).deriveChild(
-    o.derivationPath
+  const capabilities = await getCapabilities(dns, paymailAddress, o);
+
+  if (capabilities[P2P_DESTINATION_CAPABILITY]) {
+    return await resolveP2P(
+      paymailClient,
+      paymailAddress,
+      satoshis,
+      capabilities,
+      o
+    );
+  } else {
+    return await resolveNonP2P(paymailClient, paymailAddress, satoshis, o);
+  }
+}
+
+async function resolveP2P(
+  paymailClient,
+  paymailAddress,
+  satoshis,
+  capabilities,
+  o
+) {
+  var [alias, host] = paymailAddress.split("@");
+
+  const peer = capabilities[P2P_RECEIVE_CAPABILITY].replace(
+    "{alias}",
+    alias
+  ).replace("{domain.tld}", host);
+
+  const { outputs, reference } = await paymailClient.getP2pPaymentDestination(
+    paymailAddress,
+    satoshis
   );
-  var privkeyOfPaymailUser = derivedIdentityKey.privateKey.toString();
-  var pubkeyOfPaymailUser = derivedIdentityKey.publicKey.toHex();
 
-  var client = new paymail.PaymailClient();
+  return {
+    outputs: outputs.map((o) => ({ script: o.script, satoshis: o.satoshis })),
+    p2p: { peer, peerData: reference },
+  };
+}
+
+async function resolveNonP2P(paymailClient, paymailAddress, satoshis, o) {
+  var { priv, pub } = await o.getPaimailIdentityKeys();
 
   var senderInfo = {
     senderName: o.paymailOfPaymailUser.split("@")[0],
@@ -66149,34 +66371,35 @@ async function resolve(paymailAddress, satoshis = 100000, o = defaultOptions) {
     amount: satoshis,
     dt: new Date().toISOString(),
     purpose: "Request from " + o.paymailOfPaymailUser,
-    pubkey: pubkeyOfPaymailUser,
+    pubkey: pub,
   };
 
   senderInfo.signature =
-    paymail.VerifiableMessage.forBasicAddressResolution(senderInfo).sign(
-      privkeyOfPaymailUser
-    );
+    paymail.VerifiableMessage.forBasicAddressResolution(senderInfo).sign(priv);
 
-  var out = await client.getOutputFor(paymailAddress, senderInfo);
-  return out;
+  var out = await paymailClient.getOutputFor(paymailAddress, senderInfo);
+
+  return {
+    outputs: [{ script: out, satoshis }],
+  };
 }
 
-async function findPeerEndpoint(paymailString, o = defaultOptions) {
-  o = { ...defaultOptions, ...o };
-
-  var [alias, host] = paymailString.split("@");
-
+async function getCapabilities(dns, paymailAddress, o) {
+  var [_, host] = paymailAddress.split("@");
   var paymailHost = host;
   try {
-    var dnsSrvQuery = await fetch(
-      `https://dns.google.com/resolve?name=_bsvalias._tcp.${host}&type=SRV&cd=0`
-    ).then((r) => r.json());
-    if (dnsSrvQuery.Status !== 0)
-      throw new Error("No SRV record found for " + host);
-    var data = dnsSrvQuery.Answer[0].data;
-    var [_, _, paymailPort, paymailHost] = data.split(" ");
-    paymailHost = paymailHost.substr(0, paymailHost.length - 1); // remove the '.'
-    paymailHost = paymailHost + ":" + paymailPort;
+    const dnsSrvQuery = await new Promise((resolve, reject) =>
+      dns.resolveSrv(`_bsvalias._tcp.${host}`, (err, addressess) => {
+        if (err) reject(err);
+        resolve(addressess);
+      })
+    );
+
+    if (!dnsSrvQuery.length) throw new Error("Failed to find SRV record");
+
+    var { name, port } = dnsSrvQuery[0];
+    name = name.endsWith(".") ? name.substr(0, name.length - 1) : name;
+    paymailHost = name + ":" + port;
   } catch (error) {
     // failed to get SRV record - assuming that the host is same as in the paymail address
   }
@@ -66196,17 +66419,9 @@ async function findPeerEndpoint(paymailString, o = defaultOptions) {
     return null;
   }
 
-  var peer = reply.capabilities["2a40af698840"];
-  if (peer) {
-    peer = peer.replace("{alias}", alias).replace("{domain.tld}", host);
-    return peer;
-  } else return null;
+  return reply.capabilities;
 }
 
-module.exports = {
-  defaultOptions,
-  resolve,
-  findPeerEndpoint,
-};
+module.exports = { getOptionForPaymail, resolve, getCapabilities };
 
-},{"@moneybutton/paymail-client":204,"bsv":225,"isomorphic-fetch":315}]},{},[199]);
+},{"@moneybutton/paymail-client/dist/paymail-client.cjs":204,"isomorphic-fetch":315}]},{},[199]);
