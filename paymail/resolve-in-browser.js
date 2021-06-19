@@ -45,18 +45,20 @@ async function findPeerEndpoint(paymailString, o = defaultOptions) {
   o = { ...defaultOptions, ...o };
 
   var [alias, host] = paymailString.split("@");
-
   var paymailHost = host;
   try {
-    var dnsSrvQuery = await fetch(
-      `https://dns.google.com/resolve?name=_bsvalias._tcp.${host}&type=SRV&cd=0`
-    ).then((r) => r.json());
-    if (dnsSrvQuery.Status !== 0)
-      throw new Error("No SRV record found for " + host);
-    var data = dnsSrvQuery.Answer[0].data;
-    var [_, _, paymailPort, paymailHost] = data.split(" ");
-    paymailHost = paymailHost.substr(0, paymailHost.length - 1); // remove the '.'
-    paymailHost = paymailHost + ":" + paymailPort;
+    const dnsSrvQuery = await new Promise((resolve, reject) =>
+      paymail.BrowserDns.resolveSrv(
+        `_bsvalias._tcp.${host}`,
+        (err, addressess) => {
+          if (err) reject(err);
+          resolve(addressess);
+        }
+      )
+    );
+    if (dnsSrvQuery.length) {
+      paymailHost = dnsSrvQuery[0].name + ":" + dnsSrvQuery[0].port;
+    }
   } catch (error) {
     // failed to get SRV record - assuming that the host is same as in the paymail address
   }
