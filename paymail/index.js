@@ -28,7 +28,7 @@ async function resolve(
   paymailClient,
   dns,
   paymailAddress,
-  satoshis = 100000,
+  satoshis = -1,
   o
 ) {
   console.log("OPTIONS : " + JSON.stringify(o));
@@ -62,19 +62,31 @@ async function resolveP2P(
     alias
   ).replace("{domain.tld}", host);
 
-  const { outputs, reference } = await paymailClient.getP2pPaymentDestination(
+  const {
+    outputs,
+    reference
+  } = await paymailClient.getP2pPaymentDestination(
     paymailAddress,
     satoshis
   );
 
   return {
-    outputs: outputs.map((o) => ({ script: o.script, satoshis: o.satoshis })),
-    p2p: { peer, peerData: reference },
+    outputs: outputs.map((o) => ({
+      script: o.script,
+      satoshis: o.satoshis
+    })),
+    p2p: {
+      peer,
+      peerData: reference
+    },
   };
 }
 
 async function resolveNonP2P(paymailClient, paymailAddress, satoshis, o) {
-  var { priv, pub } = await o.getPaimailIdentityKeys();
+  var {
+    priv,
+    pub
+  } = await o.getPaimailIdentityKeys();
 
   var senderInfo = {
     senderName: o.paymailOfPaymailUser.split("@")[0],
@@ -91,7 +103,10 @@ async function resolveNonP2P(paymailClient, paymailAddress, satoshis, o) {
   var out = await paymailClient.getOutputFor(paymailAddress, senderInfo);
 
   return {
-    outputs: [{ script: out, satoshis }],
+    outputs: [{
+      script: out,
+      satoshis
+    }],
   };
 }
 
@@ -108,7 +123,10 @@ async function getCapabilities(dns, paymailAddress, o) {
 
     if (!dnsSrvQuery.length) throw new Error("Failed to find SRV record");
 
-    var { name, port } = dnsSrvQuery[0];
+    var {
+      name,
+      port
+    } = dnsSrvQuery[0];
     name = name.endsWith(".") ? name.substr(0, name.length - 1) : name;
     paymailHost = name + ":" + port;
   } catch (error) {
@@ -122,8 +140,8 @@ async function getCapabilities(dns, paymailAddress, o) {
       if (o.debugLog)
         o.debugLog(
           `Failed to get Paymail Provider Capabilities of '${host}'` +
-            `\nURL: ${capabilitiesURL}` +
-            `\nReply: ${JSON.stringify(reply)}`
+          `\nURL: ${capabilitiesURL}` +
+          `\nReply: ${JSON.stringify(reply)}`
         );
   } catch (error) {
     // failed to get /.well-known/bsvalias
@@ -133,4 +151,8 @@ async function getCapabilities(dns, paymailAddress, o) {
   return reply.capabilities;
 }
 
-module.exports = { getOptionForPaymail, resolve, getCapabilities };
+module.exports = {
+  getOptionForPaymail,
+  resolve,
+  getCapabilities
+};

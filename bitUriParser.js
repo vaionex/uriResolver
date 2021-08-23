@@ -3,8 +3,7 @@ var fetch = require("isomorphic-fetch");
 var bsv = require("bsv");
 
 // the schemes are ordered - more strict to less strict
-var schemes = [
-  {
+var schemes = [{
     name: "privkey",
     mainProtocol: "privkey",
     checkhSchema: (s) => true,
@@ -78,10 +77,9 @@ var schemes = [
     mainProtocol: "bip282",
     checkhSchema: (s) => s === "bitcoin:" || s === "pay:",
     checkPath: (p) => p === "",
-    checkParams: (p) =>
-      ["req-inputs", "req-bip275", "paymentUrl", "network", "outputs"].every(
-        (i) => typeof p[i] === "string"
-      ),
+    checkParams: (p) => ["req-inputs", "req-bip275", "paymentUrl", "network", "outputs"].every(
+      (i) => typeof p[i] === "string"
+    ),
     knownRequiredParams: ["req-inputs", "req-bip275"],
 
     parseOutputs: (uri, o) => create_BIP275_Outputs(uri, o),
@@ -96,8 +94,7 @@ var schemes = [
     mainProtocol: "bip282",
     checkhSchema: (s) => s === "bitcoin:" || s === "pay:",
     checkPath: (p) => p === "",
-    checkParams: (p) =>
-      ["req-inputs", "req-bip272", "r"].every((i) => typeof p[i] === "string"),
+    checkParams: (p) => ["req-inputs", "req-bip272", "r"].every((i) => typeof p[i] === "string"),
     knownRequiredParams: ["req-inputs", "req-bip272"],
 
     parseOutputs: (uri, o) => create_BIP272_Outputs(uri, o),
@@ -112,10 +109,9 @@ var schemes = [
     mainProtocol: "bip275",
     checkhSchema: (s) => s === "bitcoin:" || s === "pay:",
     checkPath: (p) => p === "",
-    checkParams: (p) =>
-      ["req-bip275", "paymentUrl", "network", "outputs"].every(
-        (i) => typeof p[i] === "string"
-      ),
+    checkParams: (p) => ["req-bip275", "paymentUrl", "network", "outputs"].every(
+      (i) => typeof p[i] === "string"
+    ),
     knownRequiredParams: ["req-bip275"],
 
     parseOutputs: (uri, o) => create_BIP275_Outputs(uri, o),
@@ -130,8 +126,7 @@ var schemes = [
     mainProtocol: "bip272",
     checkhSchema: (s) => s === "bitcoin:" || s === "pay:",
     checkPath: (p) => p === "",
-    checkParams: (p) =>
-      ["req-bip272", "r"].every((i) => typeof p[i] === "string"),
+    checkParams: (p) => ["req-bip272", "r"].every((i) => typeof p[i] === "string"),
     knownRequiredParams: ["req-bip272"],
 
     parseOutputs: (uri, o) => create_BIP272_Outputs(uri, o),
@@ -248,19 +243,28 @@ async function create_PrivateKey_Inputs(uri, o, key) {
 
 async function create_Paymail_Outputs(uri, o) {
   const satoshis = parseInt(uri.searchParams["amount"]);
-  var { outputs, p2p } = await o.paymailResolverFunction(
+  var {
+    outputs,
+    p2p
+  } = await o.paymailResolverFunction(
     decodeURIComponent(uri.host),
-    satoshis || 100000,
+    satoshis || -1,
     o
   );
 
-  if (!p2p) p2p = { peer: null, peerData: null };
+  if (!p2p) p2p = {
+    peer: null,
+    peerData: null
+  };
   o["peer"] = p2p.peer;
   o["peerData"] = p2p.peerData;
 
   return outputs.map((o) => {
     if (satoshis) return o;
-    else return { ...o, satoshis: NaN };
+    else return {
+      ...o,
+      satoshis: NaN
+    };
   });
 }
 
@@ -273,6 +277,7 @@ function create_BIP275_Outputs(uri, o) {
     };
   });
 }
+
 function create_BIP275_BIP282_Inputs(uri, o) {
   var ins = JSON.parse(uri.searchParams["req-inputs"]);
   return ins.map((i) => {
@@ -301,6 +306,7 @@ async function create_BIP272_Outputs(uri, o) {
     };
   });
 }
+
 function create_BIP272_BIP282_Inputs(uri, o) {
   var ins = o["req-inputs"];
   return ins.map((i) => {
@@ -312,6 +318,7 @@ function create_BIP272_BIP282_Inputs(uri, o) {
     };
   });
 }
+
 function create_BIP21_Output(uri, o) {
   return {
     script: bsv.Script.fromAddress(uri.host).toHex(),
@@ -320,6 +327,7 @@ function create_BIP21_Output(uri, o) {
     ),
   };
 }
+
 function create_BIP72_Outputs(uri, o) {
   throw new Error("BIP72 Not Implemented");
   // TODO: Implement this method
@@ -368,36 +376,36 @@ function findUriType(bitcoinUri, options) {
 
   var matches = comparisons.filter(
     (i) =>
-      i.protocolPass &&
-      i.pathPass &&
-      i.paramsPass &&
-      i.unknownRequiredParams.length === 0
+    i.protocolPass &&
+    i.pathPass &&
+    i.paramsPass &&
+    i.unknownRequiredParams.length === 0
   );
 
   options.debugLog(
     "Scheme Comparisons : " +
-      JSON.stringify(
-        comparisons.map((i) => JSON.stringify(i)),
-        null,
-        1
-      )
+    JSON.stringify(
+      comparisons.map((i) => JSON.stringify(i)),
+      null,
+      1
+    )
   );
   options.debugLog(
     "Matches : " +
-      JSON.stringify(
-        matches.map((i) => JSON.stringify(i)),
-        null,
-        1
-      )
+    JSON.stringify(
+      matches.map((i) => JSON.stringify(i)),
+      null,
+      1
+    )
   );
 
   if (matches[0]) return matches[0].name;
 
   return (
     "Unknown Bitcoin URI" +
-    (requiredParams.length > 0
-      ? " - with required parameters: [" + requiredParams.join(", ") + "]"
-      : "")
+    (requiredParams.length > 0 ?
+      " - with required parameters: [" + requiredParams.join(", ") + "]" :
+      "")
   );
 }
 
@@ -452,7 +460,7 @@ defaultOptions = {
   paymailResolverFunction: (paymail, satoshis, o) => {
     throw new Error(
       "bitUriParser requires you to set 'options.paymailResolverFunction'" +
-        " to a function like : function(paymail, satoshis, optionsObject) { /* RETURNS { outputs: [{ script, satoshis }], p2p: { peer, peerData } } */ }"
+      " to a function like : function(paymail, satoshis, optionsObject) { /* RETURNS { outputs: [{ script, satoshis }], p2p: { peer, peerData } } */ }"
     );
   },
 };
@@ -460,7 +468,7 @@ defaultOptions = {
 async function parse(bitcoinUriString, options = defaultOptions) {
   for (const key in defaultOptions)
     options[key] =
-      options[key] !== undefined ? options[key] : defaultOptions[key];
+    options[key] !== undefined ? options[key] : defaultOptions[key];
 
   bitcoinUri = getUriObject(bitcoinUriString, options);
 
