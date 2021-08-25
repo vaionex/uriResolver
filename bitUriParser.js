@@ -324,7 +324,7 @@ function create_BIP21_Output(uri, o) {
     script: bsv.Script.fromAddress(uri.host).toHex(),
     satoshis: parseInt(
       parseFloat(uri.searchParams["amount"]).toFixed(8) * 100000000
-    ),
+    ) || -1,
   };
 }
 
