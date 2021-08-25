@@ -263,7 +263,7 @@ async function create_Paymail_Outputs(uri, o) {
     if (satoshis) return o;
     else return {
       ...o,
-      satoshis: NaN
+      satoshis: -1
     };
   });
 }
@@ -467,8 +467,7 @@ defaultOptions = {
 
 async function parse(bitcoinUriString, options = defaultOptions) {
   for (const key in defaultOptions)
-    options[key] =
-    options[key] !== undefined ? options[key] : defaultOptions[key];
+    options[key] = options[key] !== undefined ? options[key] : defaultOptions[key];
 
   bitcoinUri = getUriObject(bitcoinUriString, options);
 
