@@ -16,8 +16,8 @@ function getOptionForPaymail(
   return {
     paymailOfPaymailUser: ownPaymail,
     getPaimailIdentityKeys,
-    paymailResolverFunction: async (paymailAddress, satoshis, o, type) =>
-      await resolve(client, dns, paymailAddress, satoshis, o, type),
+    paymailResolverFunction: async (paymailAddress, satoshis, o, multi) =>
+      await resolve(client, dns, paymailAddress, satoshis, o, multi),
   };
 }
 
@@ -30,29 +30,24 @@ async function resolve(
   paymailAddress,
   satoshis = -1,
   o,
-  type
+  multi
 ) {
   console.log("OPTIONS : " + JSON.stringify(o));
 
   const capabilities = await getCapabilities(dns, paymailAddress, o);
-
-  if (capabilities[P2P_DESTINATION_CAPABILITY]) {
+  if (
+    capabilities[P2P_DESTINATION_CAPABILITY] &&
+    (!multi || multi === "false")
+  ) {
     return await resolveP2P(
       paymailClient,
       paymailAddress,
       satoshis,
       capabilities,
-      o,
-      type
+      o
     );
   } else {
-    return await resolveNonP2P(
-      paymailClient,
-      paymailAddress,
-      satoshis,
-      o,
-      type
-    );
+    return await resolveNonP2P(paymailClient, paymailAddress, satoshis, o);
   }
 }
 
@@ -61,8 +56,7 @@ async function resolveP2P(
   paymailAddress,
   satoshis,
   capabilities,
-  o,
-  type
+  o
 ) {
   var [alias, host] = paymailAddress.split("@");
 
@@ -76,19 +70,6 @@ async function resolveP2P(
     satoshis
   );
 
-  if (type) {
-    return {
-      outputs: outputs.map((o) => ({
-        script: o.script,
-        amount: o.satoshis,
-      })),
-      p2p: {
-        peer,
-        peerData: reference,
-      },
-    };
-  }
-
   return {
     outputs: outputs.map((o) => ({
       script: o.script,
@@ -101,7 +82,7 @@ async function resolveP2P(
   };
 }
 
-async function resolveNonP2P(paymailClient, paymailAddress, satoshis, o, type) {
+async function resolveNonP2P(paymailClient, paymailAddress, satoshis, o) {
   var { priv, pub } = await o.getPaimailIdentityKeys();
 
   var senderInfo = {
@@ -117,17 +98,6 @@ async function resolveNonP2P(paymailClient, paymailAddress, satoshis, o, type) {
     paymail.VerifiableMessage.forBasicAddressResolution(senderInfo).sign(priv);
 
   var out = await paymailClient.getOutputFor(paymailAddress, senderInfo);
-
-  if (type) {
-    return {
-      outputs: [
-        {
-          script: out,
-          amount: satoshis,
-        },
-      ],
-    };
-  }
   return {
     outputs: [
       {

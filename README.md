@@ -1,51 +1,61 @@
 # bitUriParser
+
 A parser for bitcoin URI strings
 
 ### Supports formats like PrivateKey, Address, Paymail, Bip21, Bip272, Bip275, Bip282
 
 ### Released under "OPEN BSV-SPECIFIC LICENSE"
 
-
 # Install
 
 #### NodeJS
+
 ```
     npm i --save bituriparser
 ```
 
 #### Browser
+
 ```
     // will be available later...
 ```
 
 # Use
 
+```js
+var bitUriParser = require("bituriparser");
 
-``` js
-    var bitUriParser = require("bituriparser");
-
-    var bitUri = "bitcoin:1FMif2XbHJx5L2x6QWYKyWEWPpxJC1ipXw?sv=&amount=0.00123456&label=PayMe";
-    var txRequestObject = await bitUriParser.parse(bitUri, {});
+var bitUri =
+  "bitcoin:1FMif2XbHJx5L2x6QWYKyWEWPpxJC1ipXw?sv=&amount=0.00123456&label=PayMe";
+var txRequestObject = await bitUriParser.parse(bitUri, {});
 ```
 
 The second parameter in the parse method is the options object.
 If you need to resolve paymails, then you need to provide some options in that object.
 
 If you have an identity in a running paymail server, simply add this:
-``` js
-    await bitUriParser.parse(bitUri, {
-        paymailOfPaymailUser: "your.paymail@domain.com",
-        getPaimailIdentityKeys: () => { return { priv: "identity private key", pub: "identity public key" }; }
-    });
+
+```js
+await bitUriParser.parse(bitUri, {
+  paymailOfPaymailUser: "your.paymail@domain.com",
+  getPaimailIdentityKeys: () => {
+    return { priv: "identity private key", pub: "identity public key" };
+  },
+});
 ```
 
 Alternatively, you can also provide your own function for resolving paymails:
-``` js
-    await bitUriParser.parse(bitUri, {
-        paymailResolverFunction: async function(paymailAddress, satoshis, optionsObject) {
-            return { outputs: [{ script, satoshis }], p2p: { peer, peerData } };
-        }
-    });
+
+```js
+await bitUriParser.parse(bitUri, {
+  paymailResolverFunction: async function (
+    paymailAddress,
+    satoshis,
+    optionsObject
+  ) {
+    return { outputs: [{ script, satoshis }], p2p: { peer, peerData } };
+  },
+});
 ```
 
 You can also replace the logic used to discover UTXOs when sweeping Private Keys in the HEX or WIF formats:
@@ -99,4 +109,4 @@ await bitUriParser.parse(bitUri, {
 
 # EXAMPLES
 
-## See [examples.md](https://github.com/bitsent/bitUriParser/blob/master/examples.md)
+## See [examples.md](https://github.com/Kohze/uriResolver/blob/master/examples.md)
