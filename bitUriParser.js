@@ -248,15 +248,17 @@ async function create_PrivateKey_Inputs(uri, o, key) {
 
 async function create_Paymail_Outputs(uri, o) {
   const satoshis = parseInt(uri.searchParams["amount"]);
-  const type = uri.searchParams["type"];
-  if (type) {
-    type.toUpperCase();
+  let multi = uri.searchParams["multi"];
+
+  if (multi) {
+    multi = multi.toLowerCase();
   }
+
   var { outputs, p2p } = await o.paymailResolverFunction(
     decodeURIComponent(uri.host),
     satoshis || -1,
     o,
-    type
+    multi
   );
 
   if (!p2p)
