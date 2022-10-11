@@ -248,7 +248,12 @@ async function create_PrivateKey_Inputs(uri, o, key) {
 
 async function create_Paymail_Outputs(uri, o) {
   const satoshis = parseInt(uri.searchParams["amount"]);
+  let type = uri.searchParams["type"];
   let multi = uri.searchParams["multi"];
+
+  if (type) {
+    type = type.toUpperCase();
+  }
 
   if (multi) {
     multi = multi.toLowerCase();
@@ -258,6 +263,7 @@ async function create_Paymail_Outputs(uri, o) {
     decodeURIComponent(uri.host),
     satoshis || -1,
     o,
+    type,
     multi
   );
 
