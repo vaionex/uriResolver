@@ -16,8 +16,8 @@ function getOptionForPaymail(
   return {
     paymailOfPaymailUser: ownPaymail,
     getPaimailIdentityKeys,
-    paymailResolverFunction: async (paymailAddress, satoshis, o, multi) =>
-      await resolve(client, dns, paymailAddress, satoshis, o, multi),
+    paymailResolverFunction: async (paymailAddress, satoshis, o, type, multi) =>
+      await resolve(client, dns, paymailAddress, satoshis, o, type, multi),
   };
 }
 
@@ -30,6 +30,7 @@ async function resolve(
   paymailAddress,
   satoshis = -1,
   o,
+  type,
   multi
 ) {
   console.log("OPTIONS : " + JSON.stringify(o));
@@ -44,10 +45,17 @@ async function resolve(
       paymailAddress,
       satoshis,
       capabilities,
-      o
+      o,
+      type
     );
   } else {
-    return await resolveNonP2P(paymailClient, paymailAddress, satoshis, o);
+    return await resolveNonP2P(
+      paymailClient,
+      paymailAddress,
+      satoshis,
+      o,
+      type
+    );
   }
 }
 
@@ -56,7 +64,8 @@ async function resolveP2P(
   paymailAddress,
   satoshis,
   capabilities,
-  o
+  o,
+  type
 ) {
   var [alias, host] = paymailAddress.split("@");
 
@@ -70,6 +79,19 @@ async function resolveP2P(
     satoshis
   );
 
+  if (type) {
+    return {
+      outputs: outputs.map((o) => ({
+        script: o.script,
+        amount: o.satoshis,
+      })),
+      p2p: {
+        peer,
+        peerData: reference,
+      },
+    };
+  }
+
   return {
     outputs: outputs.map((o) => ({
       script: o.script,
@@ -82,7 +104,7 @@ async function resolveP2P(
   };
 }
 
-async function resolveNonP2P(paymailClient, paymailAddress, satoshis, o) {
+async function resolveNonP2P(paymailClient, paymailAddress, satoshis, o, type) {
   var { priv, pub } = await o.getPaimailIdentityKeys();
 
   var senderInfo = {
@@ -98,6 +120,18 @@ async function resolveNonP2P(paymailClient, paymailAddress, satoshis, o) {
     paymail.VerifiableMessage.forBasicAddressResolution(senderInfo).sign(priv);
 
   var out = await paymailClient.getOutputFor(paymailAddress, senderInfo);
+
+  if (type) {
+    return {
+      outputs: [
+        {
+          script: out,
+          amount: satoshis,
+        },
+      ],
+    };
+  }
+
   return {
     outputs: [
       {
