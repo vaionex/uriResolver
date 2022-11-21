@@ -318,6 +318,10 @@ async function create_BIP272_Outputs(uri, o) {
   var r = uri.searchParams["r"];
   var req = await get(r, o);
 
+  if (req?.version && req?.modes) {
+    return req;
+  }
+
   o["memo"] = req["memo"];
   o["peer"] = req["paymentUrl"];
   o["peerData"] = req["merchantData"];
@@ -326,7 +330,7 @@ async function create_BIP272_Outputs(uri, o) {
   return req.outputs.map((o) => {
     return {
       script: o.script,
-      satoshis: parseInt(o.amount),
+      satoshis: parseInt(o.amount || o.satoshis),
     };
   });
 }
@@ -520,6 +524,25 @@ async function parse(bitcoinUriString, options = defaultOptions) {
   var peer = await schema.parsePeer(bitcoinUri, options);
   var peerData = await schema.parsePeerData(bitcoinUri, options);
   var peerProtocol = await schema.getPeerProtocol(bitcoinUri, options);
+
+  if (outputs?.version && outputs?.modes) {
+    delete outputs.statusCode;
+    delete outputs.status;
+    delete outputs.msg;
+
+    return {
+      uri: bitcoinUriString,
+      type: uriType,
+      mainProtocol: schema.mainProtocol,
+      ...outputs,
+      inputs,
+      memo,
+      isBSV: bitcoinUri.searchParams.type ? false : !isBtcProtocol,
+      peer,
+      peerData,
+      peerProtocol,
+    };
+  }
 
   return {
     uri: bitcoinUriString,
